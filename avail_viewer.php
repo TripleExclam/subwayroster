@@ -1,156 +1,122 @@
 <?php
 //include auth.php file on all secure pages
 include("auth.php");
-$_SESSION['day'] = date('y-m-d', strtotime('last sunday of ' . $_POST['month_available']));
+if ($_SESSION["clearance"] == "pleb") {
+    header("Location: index.php");
+    exit(); 
+}
+function isDate($value) 
+{
+    if (!$value) {
+        return false;
+    }
+
+    try {
+        new \DateTime($value);
+        return true;
+    } catch (\Exception $e) {
+        return false;
+    }
+}
+if (!isset($_GET['month']) || !isDate($_GET['month'])) {
+  $_GET['month'] = date('y-m-d', strtotime("-1 months"));
+} 
+$_SESSION['day'] = date('y-m-d', strtotime('last sunday of ' . $_GET['month']));
+
 include("query_avail.php");
 ?>
 <!DOCTYPE html>
 <html>
 <head>
 	<meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>Welcome Home</title>
-	<link rel="stylesheet" href="stylesheet2.css" />
+  <link rel="stylesheet" href="stylesheet2.css" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  
 </head>
 <body>
+  <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="#">Subway Stones Corner</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="index.php">Home <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Enter Availability
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <?php 
+          $date = date('Y-m-d', strtotime('next wednesday'));
+          for ($i = 0; $i < 20; $i++) {
+            echo "<a class=\"dropdown-item\" href=\"avail_enter.php?date=".$date."\">".$date."</a>";
+            $date = date('Y-m-d', strtotime($date. ' + 7 days'));
+          }
+        ?>
+          </div>
+        <li class="nav-item active">
+          <a class="nav-link" href="avail_viewer.php">View Availability<span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="build_roster.php">View Roster<span class="sr-only">(current)</span></a>
+        </li>
+          <?php
+      if ($_SESSION['clearance'] == 'admin') {
+        echo "<li class=\"nav-item\"><a class=\"nav-link\" href=\"emp_data.php\">Employee Preferences<span class=\"sr-only\">(current)</span></a></li>";
+      }
+      ?>
+      </ul>
+    </div>
+  </nav>
 	<div class="wrapper">
   <main>
-    <div class="toolbar">
-      <div class="toggle">
-      </div>
-      <div id="current_month" class="current-month"> <?php echo date('y-m-d', strtotime($_POST['month_available']. ' + 1 months'));?></div>
-    </div>
     <div class="calendar">
-      <div class="calendar__header">
-        <div>mon</div>
-        <div>tue</div>
-        <div>wed</div>
-        <div>thu</div>
-        <div>fri</div>
-        <div>sat</div>
-        <div>sun</div>
+      <div class="position-sticky border bg-info" style="top:0px;">
+        <div class="calendar__header">
+          <div>mon</div>
+          <div>tue</div>
+          <div>wed</div>
+          <div>thu</div>
+          <div>fri</div>
+          <div>sat</div>
+          <div>sun</div>
+        </div> 
       </div>
-      <div class="calendar__week">
-        <div id="day0" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day1" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day2" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day3" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day4" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day5" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day6" class="calendar__day day"> <?php printAvailability(); ?> </div>
+      <div data-spy="scroll" data-target="#list-example" data-offset="0" class="scrollspy-example">  
+        <?php
+        $j = 1;
+        echo "<h4 id=\"list-item-0\">";
+        echo "<div class=\"calendar__week\">";
+        $_GET['month'] = date('y-m-d', strtotime($_GET['month']. ' + 1 months'));
+        for ($i = 0; $i < 10000; $i++) {
+          if ($i % 7 == 0 && $i > 1 && (date('y-m-d', strtotime($_SESSION['day']. ' + 15 days')) > date('y-m-01', strtotime($_GET['month']. ' + '.$j.' months')))) {
+            echo "</div></h4><h4 id=\"list-item-".$j."\">";
+            echo "<div class=\"calendar__week\">";
+            $j++;
+          }
+          elseif ($i % 7 == 0 && $i > 1) {
+            echo "</div><div class=\"calendar__week\">";
+          } 
+          echo "<div id=\"day".$i."\" class=\"calendar__day day\">";
+          printAvailability();
+          echo "</div>";
+          if (date('y-m-d', strtotime($_SESSION['day']. ' + 1 days')) == date('y-m-01', strtotime($_GET['month']. ' + 12 months'))) {
+            break;
+          }
+        }
+        echo "</div>";
+        echo "</h4>";
+        
+        ?>
       </div>
-      <div class="calendar__week">
-        <div id="day7" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day8" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day9" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day10" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day11" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day12" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day13" class="calendar__day day"> <?php printAvailability(); ?> </div>        
-      </div>
-      <div class="calendar__week">
-        <div id="day14" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day15" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day16" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day17" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day18" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day19" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day20" class="calendar__day day"> <?php printAvailability(); ?> </div>    
-      </div>
-      <div class="calendar__week">
-        <div id="day21" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day22" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day23" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day24" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day25" class="calendar__day day"> <?php printAvailability(); ?> </div> 
-        <div id="day26" class="calendar__day day"> <?php printAvailability(); ?> </div> 
-        <div id="day27" class="calendar__day day"> <?php printAvailability(); ?> </div> 
-      </div>
-      <div class="calendar__week">
-        <div id="day28" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day29" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day30" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day31" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day32" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day33" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day34" class="calendar__day day"> <?php printAvailability(); ?> </div>
-      </div>
-      <div class="calendar__week">
-        <div id="day35" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day36" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day37" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day38" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day39" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day40" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day41" class="calendar__day day"> <?php printAvailability(); ?> </div>
-      </div>
-      <div class="calendar__week">
-        <div id="day42" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day43" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day44" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day45" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day46" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day47" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day48" class="calendar__day day"> <?php printAvailability(); ?> </div>
-      </div>
-      <div class="calendar__week">
-        <div id="day49" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day50" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day51" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day52" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day53" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day54" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day55" class="calendar__day day"> <?php printAvailability(); ?> </div>
-      </div>
-      <div class="calendar__week">
-        <div id="day56" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day57" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day58" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day59" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day60" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day61" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day62" class="calendar__day day"> <?php printAvailability(); ?> </div>
-      </div>
-      <div class="calendar__week">
-        <div id="day63" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day64" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day65" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day66" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day67" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day68" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day69" class="calendar__day day"> <?php printAvailability(); ?> </div>
-      </div>
-      <div class="calendar__week">
-        <div id="day70" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day71" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day72" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day73" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day74" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day75" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day76" class="calendar__day day"> <?php printAvailability(); ?> </div>
-      </div>
-      <div class="calendar__week">
-        <div id="day77" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day78" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day79" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day80" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day81" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day82" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day83" class="calendar__day day"> <?php printAvailability(); ?> </div>
-      </div>
-      <div class="calendar__week">
-        <div id="day84" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day85" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day86" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day87" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day88" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day89" class="calendar__day day"> <?php printAvailability(); ?> </div>
-        <div id="day90" class="calendar__day day"> <?php printAvailability(); ?> </div>
-      </div>
-    </div>
-    
   </main>
   <sidebar>
-    <div class="logo">logo</div>
+    <div class="logo">Menu Bar</div>
     <div class="avatar">
       <div class="avatar__img">
         <img src="https://picsum.photos/70" alt="avatar">
@@ -162,9 +128,24 @@ include("query_avail.php");
         <i class="menu__icon fa fa-home"></i>
         <span class="menu__text">Home</span>
       </a>
+      <div id="list-example" class="list-group">
+        <?php 
+        function isMobile() {
+            return preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i", $_SERVER["HTTP_USER_AGENT"]);
+        }
+        if (!isMobile()) {
+          for ($i = 0; $i < 12; $i++) {
+            echo "<a class=\"list-group-item list-group-item-action\" href=\"#list-item-" . $i . "\">" . date('F', strtotime($_GET['month']. ' + ' . $i . ' months')) . "</a>";
+          }
+        }
+        ?>
+      </div>
     </nav>
     <div class="copyright">copyright &copy; 2018</div>
   </sidebar>
 </div>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 </body>
 </html>

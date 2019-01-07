@@ -33,9 +33,9 @@
   font-family: "Roboto", sans-serif;
   outline: 0;
   background: #f2f2f2;
-  width: 50px;
+  width: 15px;
   border: 0;
-  margin: 0 0 15px;
+  margin: 0 0 0px;
   padding: 15px;
   box-sizing: border-box;
   font-size: 14px; 
@@ -48,7 +48,6 @@
   border: 0;
   margin: 0 0 15px;
   padding: 15px;
-  box-sizing: border-box;
   font-size: 14px;
   float: none; /* if you had floats before? otherwise inline-block will behave differently */
   display: inline-block;
@@ -146,12 +145,35 @@ body {
 
 .row {
   float: left;
-  width: 10%;
+  width: 13%;
   padding: 4px;
+}
+
+.row .part {
+  width: 120%;
+}
+
+.row button {
+  background: #4CAF50;
 }
 .row .heading {
   font-weight: bold;
   font-size: 18px;
+}
+
+.row .part label{
+  font-family: "Roboto", sans-serif;
+  text-transform: uppercase;
+  outline: 0;
+  background: #ffff01;
+  width: 100%;
+  border: 0;
+  padding: 0px;
+  color: #000000;
+  font-size: 14px;
+  -webkit-transition: all 0.3 ease;
+  transition: all 0.3 ease;
+  cursor: pointer;
 }
 
 /* Clear floats after the columns */

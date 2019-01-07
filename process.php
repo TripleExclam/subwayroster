@@ -14,27 +14,22 @@
 <body>
 
 <?php
-	$host = 'localhost:3308';
-	$user = 'root';
-	$pass = '';
-	$db = 'subwayroster';
+	include("connect.php");
 
-	$con = mysqli_connect($host, $user, $pass, $db);
-	if (!$con) {
-		echo("Error description: " . mysqli_error($con));
-	}
+	$userName = mysqli_escape_string($con, $_POST["username"]); 
+	$psw = mysqli_escape_string($con, $_POST["password"]);
 
-	$name = $_POST["username"]; 
-	$psw = $_POST["password"];
-	$sql = "SELECT * FROM employee WHERE Name = '".$name."'";
+	$statement = mysqli_prepare($con, "SELECT * FROM accounts WHERE userName = ?");
 
-	$password_hash = mysqli_query($con, $sql);
-	$row = mysqli_fetch_array($password_hash);
-
-	if($row == null || mysqli_num_rows($password_hash) == 1) {
-		if(password_verify($psw, $row['password'])) {
+	mysqli_stmt_bind_param($statement, "s", $userName);
+	mysqli_stmt_execute($statement);
+	$result = $statement->get_result();
+	$row = $result->fetch_assoc();
+	if($row == null || $result->num_rows == 1) {
+		if(password_verify($psw, $row['pHash'])) {
 			session_start();
-			$_SESSION['username'] = $name;
+			$_SESSION['username'] = $row['firstName'] . "" . $row['lastName'];
+			$_SESSION['firstName'] = $row['firstName'];
 			$_SESSION['clearance'] = $row['level'];
 			session_write_close();
             // Redirect user to index.php
@@ -46,6 +41,9 @@
 	} else {
 		echo "Password and/or username is incorrect..";
 	}
+
+	mysqli_stmt_close($statement);
+	
 
 ?>
 

@@ -6,109 +6,151 @@ include("auth.php");
 <html>
 <head>
 	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>Home</title>
-	<link rel="stylesheet" href="stylesheet.css" />
+	<link rel="stylesheet" href="stylesheet5.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 </head>
 <body>
-<div class="form">
-	<p>Welcome <?php echo $_SESSION['username']; ?>!</p>
-
-	<form class="input-form" action="avail_enter.php" method="post">
-		<button>Enter Availability</button>
-		<select name="week_available">
-  			<option id="nextweek" value="next">Next Week </option>
-  			<option id="nextweek1" value="next1">Next next Week</option>
-  			<option id="nextweek2" value="next2">Next next next Week</option>
-  			<option id="nextweek3" value="next3">Next next next next Week</option>
-  			<script>
-				function daysInMonth (month, year) {
-				    return new Date(year, month, 0).getDate();
-				}
-  				var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-			    var d = new Date();
-			    var year = d.getFullYear();
-			    var change = 0;
-			    var day = d.getDay();
-			    if (day != 3) {
-			    	if (day < 3) {
-			    		change += 3 - day;
-			    	} else {
-				    	change += 10 - day;
-				    }
-			    }
-
-			    var date = d.getDate() + change;
-			    var month = d.getMonth() + 1;
-			    var element = document.getElementById("nextweek");
-			    element.innerHTML = "Week starting " + date + "/" + month + "." ;
-			    element.setAttribute('value', year + "-" + month + "-" + date);
-			    // The number of days can be easily changed here.
-			    for (var i = 1; i < 4; i++) {
-				    date += 7;
-				    if (date > daysInMonth(month, year)) {
-				    	date = date % daysInMonth(month, year);
-				    	month += 1;
-				    	month = month % 13;
-				    	if (month == 0) {
-				    		year += 1;
-				    		month = 1;
-				    	}
-				    }
-				    var element = document.getElementById("nextweek" + i);
-			    	element.innerHTML = "Week starting " + date + "/" + month + "." ;
-			    	element.setAttribute('value', year + "-" + month + "-" + date);
-				}
-			</script>
-		</select>
-	</form>
-	<p>
-	<form class="input-form" action="avail_viewer.php" method="post">
-		<button>View Availability Starting</button>
-		<select name="month_available">
-  			<option id="nextmonth0" value="next">Next Week </option>
-  			<option id="nextmonth1" value="next1">Next next Week</option>
-  			<option id="nextmonth2" value="next2">Next next next Week</option>
-  			<option id="nextmonth3" value="next3">Next next next next Week</option>
-  		</select>
-  		<input id="year", name="year" type="hidden" value="2018"> </input>
-  		<script type="text/javascript">
-			var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-			var date = new Date();
-			var month = (date.getMonth() - 1) % 12;
-			var year = date.getFullYear();
-			for (var i = 0; i < 4; i++) {
-				
-				var element = document.getElementById("nextmonth" + i);
-				element.innerHTML = months[(month + 1) % 12];
-				element.setAttribute('value', months[month] + " " + year);
-				month++;
-				if (month == 12) {
-					month = 0;
-					year++;
-				}
-			}
-			var element = document.getElementById("nextmonth" + i);
-			element.setAttribute('value', year);
-  		</script>
-	</form>
-	</p>
-	<p>
-		<form class="input-form" action="load_roster.php" method="post">
-			<button>View Roster</button>
-		</form>
-	</p>
-	<p>
-		<?php
+	<nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-primary">
+	  <a class="navbar-brand" href="#">Subway Stones Corner</a>
+	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+	    <span class="navbar-toggler-icon"></span>
+	  </button>
+	  <div class="collapse navbar-collapse" id="navbarNavDropdown">
+	    <ul class="navbar-nav">
+	    	<li class="nav-item active">
+	        <a class="nav-link" href="index.php">Home <span class="sr-only">(current)</span></a>
+	      </li>
+	      <li class="nav-item dropdown">
+	        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	          Enter Availability
+	        </a>
+	        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+	        	<?php 
+					$date = date('Y-m-d', strtotime('next wednesday'));
+					for ($i = 0; $i < 20; $i++) {
+						echo "<a class=\"dropdown-item\" href=\"avail_enter.php?date=".$date."\">".$date."</a>";
+						$date = date('Y-m-d', strtotime($date. ' + 7 days'));
+					}
+				?>
+	        </div>
+	      <li class="nav-item">
+	        <a class="nav-link" href="avail_viewer.php">View Availability<span class="sr-only">(current)</span></a>
+	      </li>
+	      <li class="nav-item">
+	        <a class="nav-link" href="build_roster.php">View Roster<span class="sr-only">(current)</span></a>
+	      </li>
+	       	<?php
 			if ($_SESSION['clearance'] == 'admin') {
-				echo "<form class=\"input-form\" action=\"Emp_data.php\" method=\"post\">
-					<button>Employee preferences</button>
-						</form>";
+				echo "<li class=\"nav-item\"><a class=\"nav-link\" href=\"emp_data.php\">Employee Preferences<span class=\"sr-only\">(current)</span></a></li>";
+			}
+			?>
+	    </ul>
+	  </div>
+	</nav>
+	<div class="d-flex justify-content-center">
+		<div class="title-box">
+			Welcome <?php echo $_SESSION['firstName']; ?>!
+		</div>
+	</div>
+	<a id="avail_link" href="avail_enter.php">
+		<div class="left-box">
+			<?php
+			include("connect.php");
+			$date = date('Y-m-d', strtotime(date('Y-m-d', strtotime('next wednesday')). ''));
+			$date7 = date('Y-m-d', strtotime($date. ' + 7 days'));
+			$sql = "SELECT * FROM availability WHERE date >= '".$date."' AND date <= '".$date7."' AND eName = '".$_SESSION['username']."' ";
+			$query = mysqli_query($con, $sql);
+			if (!$query || mysqli_num_rows($query) < 7) {
+				echo "<input id=\"avail_note\" type=\"hidden\" value=\"".$date."\">";
+			} else {
+				while ($query && mysqli_num_rows($query) >= 7) {
+					$date = date('Y-m-d', strtotime($date. ' + 7 days'));
+					$date7 = date('Y-m-d', strtotime($date. ' + 7 days'));
+					$sql = "SELECT * FROM availability WHERE date >= '".$date."' AND date <= '".$date7."' AND eName = '".$_SESSION['username']."' ";
+					$query = mysqli_query($con, $sql);
+				}
+				echo "<input id=\"avail_note\" type=\"hidden\" value=\"true,".$date."\">";
 			}
 
-		?>
-	</p>
-	<p>This is secure area.</p>
-	<a href="logout.php">Logout</a>
-</div>
+			?>
+			<script>
+			var entered = false;
+			var avail_status = document.getElementById("avail_note").value.split(",");
+			var due_date = avail_status[0];
+			var text = "Your availability is overdude! Note that unless you input your availability it will be assumed that you are not available for the week beginning: " + due_date;
+			if (avail_status[0] == "true") {
+				var entered = true;
+				due_date = avail_status[1];
+				document.getElementById('avail_link').href = "avail_enter.php?date=" + due_date; 
+				text = "<div><span> Availability for the week beginning</span> : <span>";
+			}
+			function startTime() {
+			  var date = new Date(due_date);
+			  date.setDate(date.getDate() - 7);
+			  var today = new Date();
+			  var due = new Date(due_date);
+			  var distance = date - today;
+			  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+			  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+			  var m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+			  var s = Math.floor((distance % (1000 * 60)) / 1000);
+			  m = checkTime(m);
+			  s = checkTime(s);
+			   
+			  document.getElementById('txt').innerHTML = text + due.toDateString() + "</span></div><div><span> Due in</span> : <span>" + days + "d " + hours + "h " + m + "m " + s + "s</span></div> <div><span> On</span> : <span>" + date.toDateString() + "</span></div>";
+			  if (!entered) {
+			  	document.getElementById('txt').innerHTML = text;
+			  }
+			  var t = setTimeout(startTime, 500);
+			}
+			function checkTime(i) {
+			  if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+			  return i;
+			}
+			</script>
+			</head>
+
+			<body onload="startTime()">
+
+			<div id="txt"></div>
+		</div>
+	</a>
+	<div class="left-box">
+		<?php
+			include("connect.php");
+			$date = date('Y-m-d', strtotime(date('Y-m-d', strtotime('next wednesday')). ''));
+			$date7 = date('Y-m-d', strtotime($date. ' + 7 days'));
+			$sql = "SELECT * FROM employee ORDER BY Name";
+			$query = mysqli_query($con, $sql);
+			$count = 0;
+			while ($emp = mysqli_fetch_array($query)) {
+				$count++;
+				$sql = "SELECT * FROM availability WHERE date >= '".$date."' AND date <= '".$date7."' AND eName = '".$emp['Name']."' ";
+				$query2 = mysqli_query($con, $sql);
+				if (!$query2 || mysqli_num_rows($query2) < 7) {
+					if ($count == mysqli_num_rows($query)) {
+						echo " and " . $emp['firstName'] . " " . $emp['lastName'];
+					} else if ($count == mysqli_num_rows($query) - 1) {
+						echo $emp['firstName'] . " " . $emp['lastName'];
+					}
+					else {
+						echo $emp['firstName'] . " " . $emp['lastName'] . ", ";
+					}
+				}
+			}
+			echo " still need to enter their availability for the upcoming week."
+			?>
+	</div>
+	<a href="logout.php">
+		<div class="bottom-box">
+			LOGOUT
+		</div>
+	</a>
+
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 </body>
 </html>
